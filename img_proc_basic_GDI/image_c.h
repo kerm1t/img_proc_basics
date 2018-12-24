@@ -27,11 +27,15 @@ image make_image(const int w, const int h, const int chan);
 void free_image(image img);
 image load_image(const char* filename);
 void save_image(image img, const char* filename);
+image copy_image(image img);
 
 float get_pixel(image img, int x, int y, int chan);
 void set_pixel(image img, int x, int y, int chan, float val);
 
+// manipulate
 image rgb_to_grayscale(image img);
+void shift_image(image img, int chan, float val);
+void clamp_image(image img);
 
 #ifdef __cplusplus
 }

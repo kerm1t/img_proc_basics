@@ -50,32 +50,37 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MSG msg;
 
     HDC hdc = GetDC(hWnd);
-    image imgG;
+    image imgOut;
 
-    imgG = make_image(img.w, img.h, img.chan);
-    for (int y = 0; y < img.h; y++)
+    imgOut = copy_image(img);
+/*    for (int y = 0; y < img.h; y++)
     {
       for (int x = 0; x < img.w; x++)
       {
-        set_pixel(img, x, y, 0, 0); // remove red part of RGB
+        set_pixel(imgOut, x, y, 0, 0); // remove red part of RGB
       }
     }
+    */
+//    imgOut = rgb_to_grayscale(img);
 
-//    imgG = rgb_to_grayscale(img);
+    shift_image(imgOut, 0, 1.4);
+    shift_image(imgOut, 1, 1.4);
+    shift_image(imgOut, 2, 1.4);
+    clamp_image(imgOut);
 
-    for (int y = 0; y < img.h; y++)
+    for (int y = 0; y < imgOut.h; y++)
     {
-      for (int x = 0; x < img.w; x++)
+      for (int x = 0; x < imgOut.w; x++)
       {
-        float r = get_pixel(img, x, y, 0);
-        float g = get_pixel(img, x, y, 1);
-        float b = get_pixel(img, x, y, 2);
+        float r = get_pixel(imgOut, x, y, 0);
+        float g = get_pixel(imgOut, x, y, 1);
+        float b = get_pixel(imgOut, x, y, 2);
         SetPixel(hdc, x, y, RGB(r, g, b)); // draw to GDI canvas
       }
     }
 //    save_image(imgG, "d:\\output.png");
     free_image(img);
-    free_image(imgG);
+    free_image(imgOut);
 
     // Main message loop:
     while (GetMessage(&msg, nullptr, 0, 0))
