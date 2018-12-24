@@ -1,0 +1,9 @@
+# 2018-12-23
+
+cmake_minimum_required (VERSION 3.6)
+
+project (img_proc_basic)
+
+file(.cpp .h)
+	
+add_executable(img_proc_basic WIN32)
