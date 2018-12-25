@@ -143,7 +143,7 @@ image rgb_to_hsv(image img)
   return imgHSV;
 };
 
-image hsv_to_rgb(image img) // nok
+image hsv_to_rgb(image img)
 {
   assert(img.chan == 3);
   image imgRGB = make_image(img.w, img.h, img.chan);
@@ -158,12 +158,10 @@ image hsv_to_rgb(image img) // nok
 // https://en.wikipedia.org/wiki/HSL_and_HSV#Hue_and_chroma
       float C = V * S;
       float h = H * 6.0f;
-//      float X = C * (1 - abs((int)h % 2 - 1)); // use fmod ?
       float X = C * (1.0f - fabs(fmod(h,2) - 1.0f));
       float r, g, b;
       r = g = b = 0.0f; // if h / H is undefined
-      // find bottom points for r,g,b
-      // position on hexagon
+      // find bottom points for r,g,b   ...   position on hexagon
       if ((0 <= h) && (h <= 1))
       {
         r = C;
@@ -194,19 +192,16 @@ image hsv_to_rgb(image img) // nok
         g = 0;
         b = C;
       }
-      else //if ((5 < h) && (h <= 6))
+      else if ((5 < h) && (h <= 6))
       {
         r = C;
         g = 0;
         b = X;
       }
       float m = V - C;
-      float R = r + m;
-      float G = g + m;
-      float B = b + m;
-      set_pixel(imgRGB, x, y, 0, R);
-      set_pixel(imgRGB, x, y, 1, G);
-      set_pixel(imgRGB, x, y, 2, B);
+      set_pixel(imgRGB, x, y, 0, r+m);
+      set_pixel(imgRGB, x, y, 1, g+m);
+      set_pixel(imgRGB, x, y, 2, b+m);
     }
   }
   return imgRGB;
