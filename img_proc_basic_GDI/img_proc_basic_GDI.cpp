@@ -53,6 +53,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     image imgOut;
 
     imgOut = copy_image(img);
+    // a) remove red
 /*    for (int y = 0; y < img.h; y++)
     {
       for (int x = 0; x < img.w; x++)
@@ -61,11 +62,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
       }
     }
     */
+
+    // b) convert to grey
 //    imgOut = rgb_to_grayscale(img);
 
-    shift_image(imgOut, 0, 1.4);
-    shift_image(imgOut, 1, 1.4);
-    shift_image(imgOut, 2, 1.4);
+    // c) shift
+    shift_image(imgOut, 0, 0.8f);
+    shift_image(imgOut, 1, 1.4f);
+    shift_image(imgOut, 2, 0.1f);
     clamp_image(imgOut);
 
     for (int y = 0; y < imgOut.h; y++)
@@ -75,7 +79,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         float r = get_pixel(imgOut, x, y, 0);
         float g = get_pixel(imgOut, x, y, 1);
         float b = get_pixel(imgOut, x, y, 2);
-        SetPixel(hdc, x, y, RGB(r, g, b)); // draw to GDI canvas
+        SetPixel(hdc, x, y, RGB(r*255.0f, g*255.0f, b*255.0f)); // draw to GDI canvas
       }
     }
 //    save_image(imgG, "d:\\output.png");

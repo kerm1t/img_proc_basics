@@ -7,20 +7,16 @@
 extern "C" {
 #endif
 
-enum img_type { basic = 0, uint = 2, real = 4, complex = 8 };
-
 typedef struct
 {
   int w;
   int h;
   int chan;
-//  img_type type;
 
   // In our data array we store the image in CHW format.
   // The first pixel in data is at channel 0, row 0, column 0.
   // The next pixel is channel 0, row 0, column 1, then channel 0, row 0, column 2, etc.
-  unsigned char * data;
-
+  float * data; // [0.0 ... 1.0]
 } image;
 
 image make_image(const int w, const int h, const int chan);

@@ -12,20 +12,39 @@ image make_image(const int w, const int h, const int chan) // 1 byte per channel
   img.w = w;
   img.h = h;
   img.chan = chan;
-  img.data = (unsigned char*)malloc(w * h * chan);
+  img.data = malloc(w * h * chan * sizeof(float));
   return img;
 };
 
 void free_image(image img)
 {
-//  stbi_image_free(img.data);
   free(img.data);
 };
 
-image load_image(const char* filename)
+image load_image(const char* filename) // convert from HWC (channels interleaved) to CHW
 {
-  image img;
-  img.data = stbi_load(filename, &img.w, &img.h, &img.chan, 0);
+  int w;
+  int h;
+  int chan;
+  unsigned char* data;
+  data = stbi_load(filename, &w, &h, &chan, 0);
+  
+  image img = make_image(w, h, chan);
+
+  for (int y = 0; y < img.h; y++)
+  {
+    for (int x = 0; x < img.w; x++)
+    {
+      unsigned char r = data[y*img.w*img.chan + x*img.chan + 0]; // STB is interleaved channels
+      unsigned char g = data[y*img.w*img.chan + x*img.chan + 1];
+      unsigned char b = data[y*img.w*img.chan + x*img.chan + 2];
+      set_pixel(img, x, y, 0, (float)r / 255.0f);
+      set_pixel(img, x, y, 1, (float)g / 255.0f);
+      set_pixel(img, x, y, 2, (float)b / 255.0f);
+    }
+  }
+  free(data);
+
   return img;
 };
 
@@ -40,23 +59,23 @@ void save_image(image img, const char* filename)
 image copy_image(image img)
 {
   image imgOut = make_image(img.w, img.h, img.chan);
-  memcpy(imgOut.data, img.data, img.w* img.h* img.chan);
+  memcpy(imgOut.data, img.data, img.w* img.h* img.chan * sizeof(float));
   return imgOut;
 };
 
-float get_pixel(image img, int x, int y, int chan)
+float get_pixel(image img, int x, int y, int chan) // CHW : channel -> height -> width
 {
   // padding strategy: clamp
   if (x < 0) x = 0;
   if (x >= img.w) x = img.w-1;
   if (y < 0) y = 0;
   if (y >= img.h) y = img.h - 1;
-  return img.data[y*img.w*img.chan + x*img.chan + chan]; // STB is interleaved channels
+  return img.data[chan*img.w*img.h + y*img.w + x];
 };
 
-void set_pixel(image img, int x, int y, int chan, float val)
+void set_pixel(image img, int x, int y, int chan, float val) // CHW
 {
-  img.data[y*img.w*img.chan + x*img.chan + chan] = (unsigned int)val; // STB is interleaved channels
+  img.data[chan*img.w*img.h + y*img.w + x] = val;
 };
 
 image rgb_to_grayscale(image img)
@@ -89,18 +108,17 @@ void shift_image(image img, int chan, float val)
 
 void clamp_image(image img)
 {
-/*  for (int y = 0; y < img.h; y++)
+  for (int y = 0; y < img.h; y++)
   {
     for (int x = 0; x < img.w; x++)
     {
       for (int chan = 0; chan < 3; chan++)
       {
-        if (get_pixel(img, x, y, chan) > 255)
+        if (get_pixel(img, x, y, chan) > 1.0f)
         {
-          set_pixel(img, x, y, chan, 255.0f);
+          set_pixel(img, x, y, chan, 1.0f);
         }
       }
     }
   }
-*/
 };
