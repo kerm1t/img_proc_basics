@@ -48,12 +48,27 @@ image load_image(const char* filename) // convert from HWC (channels interleaved
   return img;
 };
 
-void save_image(image img, const char* filename)
+void save_image(image img, const char* filename) // convert to HWC (channels interleaved)
 {
+  unsigned char* data = malloc(img.w*img.h*img.chan);
+  for (int y = 0; y < img.h; y++)
+  {
+    for (int x = 0; x < img.w; x++)
+    {
+      unsigned char r = (unsigned char)(get_pixel(img, x, y, 0) * 255.0f);
+      unsigned char g = (unsigned char)(get_pixel(img, x, y, 1) * 255.0f);
+      unsigned char b = (unsigned char)(get_pixel(img, x, y, 2) * 255.0f);
+      data[y*img.w*img.chan + x*img.chan + 0] = r; // STB is interleaved channels
+      data[y*img.w*img.chan + x*img.chan + 1] = g;
+      data[y*img.w*img.chan + x*img.chan + 2] = b;
+    }
+  }
+
   int comp = img.chan;
   int stride_in_bytes = 0;
+  stbi_write_png(filename, img.w, img.h, comp, data, stride_in_bytes);
 
-  stbi_write_png(filename, img.w, img.h, comp, img.data, stride_in_bytes);
+  free(data);
 };
 
 image copy_image(image img)

@@ -82,7 +82,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         SetPixel(hdc, x, y, RGB(r*255.0f, g*255.0f, b*255.0f)); // draw to GDI canvas
       }
     }
-//    save_image(imgG, "d:\\output.png");
+    save_image(imgOut, "d:\\output.png");
     free_image(img);
     free_image(imgOut);
 
