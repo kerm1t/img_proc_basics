@@ -28,7 +28,8 @@ image load_image(const char* filename) // convert from HWC (channels interleaved
   int chan;
   unsigned char* data;
   data = stbi_load(filename, &w, &h, &chan, 0);
-  
+  assert(data != NULL);
+
   image img = make_image(w, h, chan);
 
   for (int y = 0; y < img.h; y++)

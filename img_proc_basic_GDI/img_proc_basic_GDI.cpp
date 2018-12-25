@@ -37,7 +37,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_IMG_PROC_BASIC_GDI, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
-    image img = load_image("C:\\Users\\wolfg\\Pictures\\california-beach-sunset-coconut-tree-cycling-los-angeles-1680x1050.jpg");
+    image img = load_image("..\\data\\california_sunset.jpg");
 
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow, img.w, img.h))
