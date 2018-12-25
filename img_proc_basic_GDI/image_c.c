@@ -124,18 +124,17 @@ image rgb_to_hsv(image img)
       float r = get_pixel(img, x, y, 0);
       float g = get_pixel(img, x, y, 1);
       float b = get_pixel(img, x, y, 2);
-      float V = max(r, g, b);
-      float m = min(r, g, b);
+      float V = max(max(r, g), b);
+      float m = min(min(r, g), b);
       float C = V - m;
       float S = C / V;
       float h;
-      if (C == 0) h = 0;
-      if (V == r) h = (g - b) / C;
-      if (V == g) h = ((b - r) + 2) / C;
-      if (V == b) h = ((r - g) + 4) / C;
-      float H;
-      if (h < 0) H = h / 6 + 1;
-      else H = h / 6;
+      if (C == 0) h = 0; // MAX == MIN
+      if (V == r) h = (g - b) / C + 0.0f;
+      if (V == g) h = (b - r) / C + 2.0f;
+      if (V == b) h = (r - g) / C + 4.0f;
+      float H = h / 6.0f;      // H = h * 60 deg
+      if (h < 0) H = H + 1.0f; // H = H + 360 deg
       set_pixel(imgHSV, x, y, 0, H);
       set_pixel(imgHSV, x, y, 1, S);
       set_pixel(imgHSV, x, y, 2, V);
@@ -144,7 +143,7 @@ image rgb_to_hsv(image img)
   return imgHSV;
 };
 
-image hsv_to_rgb(image img)
+image hsv_to_rgb(image img) // nok
 {
   assert(img.chan == 3);
   image imgRGB = make_image(img.w, img.h, img.chan);
@@ -156,44 +155,46 @@ image hsv_to_rgb(image img)
       float S = get_pixel(img, x, y, 1);
       float V = get_pixel(img, x, y, 2);
       
+// https://en.wikipedia.org/wiki/HSL_and_HSV#Hue_and_chroma
       float C = V * S;
-
-      float h = H / 60;
-      float X = C * (1 - ((int)h % (2 - 1)));
+      float h = H * 6.0f;
+//      float X = C * (1 - abs((int)h % 2 - 1)); // use fmod ?
+      float X = C * (1.0f - fabs(fmod(h,2) - 1.0f));
       float r, g, b;
-      r = g = b = 0; // if h/H is not valid
+      r = g = b = 0.0f; // if h / H is undefined
       // find bottom points for r,g,b
-      if ((0 <= h) && (h < 1))
+      // position on hexagon
+      if ((0 <= h) && (h <= 1))
       {
         r = C;
         g = X;
         b = 0;
       }
-      if ((1 <= h) && (h < 2))
+      else if ((1 < h) && (h <= 2))
       {
         r = X;
         g = C;
         b = 0;
       }
-      if ((2 <= h) && (h < 3))
+      else if ((2 < h) && (h <= 3))
       {
         r = 0;
         g = C;
         b = X;
       }
-      if ((3 <= h) && (h < 4))
+      else if ((3 < h) && (h <= 4))
       {
         r = 0;
         g = X;
         b = C;
       }
-      if ((4 <= h) && (h < 5))
+      else if ((4 < h) && (h <= 5))
       {
         r = X;
         g = 0;
         b = C;
       }
-      if ((5 <= h) && (h < 6))
+      else //if ((5 < h) && (h <= 6))
       {
         r = C;
         g = 0;
