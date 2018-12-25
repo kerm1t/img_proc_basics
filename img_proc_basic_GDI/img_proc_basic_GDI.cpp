@@ -67,22 +67,35 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //    imgOut = rgb_to_grayscale(img);
 
     // c) shift
-    shift_image(imgOut, 0, 0.8f);
-    shift_image(imgOut, 1, 1.4f);
-    shift_image(imgOut, 2, 0.1f);
-    clamp_image(imgOut);
+//    shift_image(imgOut, 0, 0.8f);
+//    shift_image(imgOut, 1, 1.4f);
+//    shift_image(imgOut, 2, 0.1f);
+//    clamp_image(imgOut);
+
+    // d) HSV
+    image imgTMP = rgb_to_hsv(img);
+    imgOut = hsv_to_rgb(imgTMP);
+    free_image(imgTMP);
 
     for (int y = 0; y < imgOut.h; y++)
     {
       for (int x = 0; x < imgOut.w; x++)
       {
-        float r = get_pixel(imgOut, x, y, 0);
-        float g = get_pixel(imgOut, x, y, 1);
-        float b = get_pixel(imgOut, x, y, 2);
+        float r,g, b;
+        if (imgOut.chan == 1)
+        {
+          r = g = b = get_pixel(imgOut, x, y, 0);
+        }
+        if (imgOut.chan == 3)
+        {
+          r = get_pixel(imgOut, x, y, 0);
+          g = get_pixel(imgOut, x, y, 1);
+          b = get_pixel(imgOut, x, y, 2);
+        }
         SetPixel(hdc, x, y, RGB(r*255.0f, g*255.0f, b*255.0f)); // draw to GDI canvas
       }
     }
-    save_image(imgOut, "d:\\output.png");
+//    save_image(imgOut, "d:\\output.png");
     free_image(img);
     free_image(imgOut);
 

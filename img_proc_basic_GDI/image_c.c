@@ -51,6 +51,7 @@ image load_image(const char* filename) // convert from HWC (channels interleaved
 
 void save_image(image img, const char* filename) // convert to HWC (channels interleaved)
 {
+// 2do: chan == 1 (gray)
   unsigned char* data = malloc(img.w*img.h*img.chan);
   for (int y = 0; y < img.h; y++)
   {
@@ -83,9 +84,9 @@ float get_pixel(image img, int x, int y, int chan) // CHW : channel -> height ->
 {
   // padding strategy: clamp
   if (x < 0) x = 0;
-  if (x >= img.w) x = img.w-1;
+  if (x >= img.w) x = img.w;
   if (y < 0) y = 0;
-  if (y >= img.h) y = img.h - 1;
+  if (y >= img.h) y = img.h;
   return img.data[chan*img.w*img.h + y*img.w + x];
 };
 
@@ -96,6 +97,7 @@ void set_pixel(image img, int x, int y, int chan, float val) // CHW
 
 image rgb_to_grayscale(image img)
 {
+  assert(img.chan == 3);
   image imgG = make_image(img.w, img.h, 1);
   for (int y = 0; y < img.h; y++)
   {
@@ -109,6 +111,105 @@ image rgb_to_grayscale(image img)
     }
   }
   return imgG;
+};
+
+image rgb_to_hsv(image img)
+{
+  assert(img.chan == 3);
+  image imgHSV = make_image(img.w, img.h, img.chan);
+  for (int y = 0; y < img.h; y++)
+  {
+    for (int x = 0; x < img.w; x++)
+    {
+      float r = get_pixel(img, x, y, 0);
+      float g = get_pixel(img, x, y, 1);
+      float b = get_pixel(img, x, y, 2);
+      float V = max(r, g, b);
+      float m = min(r, g, b);
+      float C = V - m;
+      float S = C / V;
+      float h;
+      if (C == 0) h = 0;
+      if (V == r) h = (g - b) / C;
+      if (V == g) h = ((b - r) + 2) / C;
+      if (V == b) h = ((r - g) + 4) / C;
+      float H;
+      if (h < 0) H = h / 6 + 1;
+      else H = h / 6;
+      set_pixel(imgHSV, x, y, 0, H);
+      set_pixel(imgHSV, x, y, 1, S);
+      set_pixel(imgHSV, x, y, 2, V);
+    }
+  }
+  return imgHSV;
+};
+
+image hsv_to_rgb(image img)
+{
+  assert(img.chan == 3);
+  image imgRGB = make_image(img.w, img.h, img.chan);
+  for (int y = 0; y < img.h; y++)
+  {
+    for (int x = 0; x < img.w; x++)
+    {
+      float H = get_pixel(img, x, y, 0);
+      float S = get_pixel(img, x, y, 1);
+      float V = get_pixel(img, x, y, 2);
+      
+      float C = V * S;
+
+      float h = H / 60;
+      float X = C * (1 - ((int)h % (2 - 1)));
+      float r, g, b;
+      r = g = b = 0; // if h/H is not valid
+      // find bottom points for r,g,b
+      if ((0 <= h) && (h < 1))
+      {
+        r = C;
+        g = X;
+        b = 0;
+      }
+      if ((1 <= h) && (h < 2))
+      {
+        r = X;
+        g = C;
+        b = 0;
+      }
+      if ((2 <= h) && (h < 3))
+      {
+        r = 0;
+        g = C;
+        b = X;
+      }
+      if ((3 <= h) && (h < 4))
+      {
+        r = 0;
+        g = X;
+        b = C;
+      }
+      if ((4 <= h) && (h < 5))
+      {
+        r = X;
+        g = 0;
+        b = C;
+      }
+      if ((5 <= h) && (h < 6))
+      {
+        r = C;
+        g = 0;
+        b = X;
+      }
+      float m = V - C;
+      float R = r + m;
+      float G = g + m;
+      float B = b + m;
+      set_pixel(imgRGB, x, y, 0, R);
+      set_pixel(imgRGB, x, y, 1, G);
+      set_pixel(imgRGB, x, y, 2, B);
+    }
+  }
+  return imgRGB;
+
 };
 
 void shift_image(image img, int chan, float val)
