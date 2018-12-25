@@ -74,7 +74,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // d) HSV
     image imgTMP = rgb_to_hsv(img);
-    shift_image(imgTMP, 1, 1.5f); // increase saturation
+    scale_image(imgTMP, 1, 1.5f); // increase saturation
     clamp_image(imgTMP);
     imgOut = hsv_to_rgb(imgTMP);
     free_image(imgTMP);

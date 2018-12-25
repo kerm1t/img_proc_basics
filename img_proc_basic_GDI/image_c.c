@@ -208,7 +208,7 @@ image hsv_to_rgb(image img)
 
 };
 
-void shift_image(image img, int chan, float val)
+void scale_image(image img, int chan, float val)
 {
   for (int y = 0; y < img.h; y++)
   {
