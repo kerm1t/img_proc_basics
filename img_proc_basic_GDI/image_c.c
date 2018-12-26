@@ -238,19 +238,15 @@ void clamp_image(image img) // limit RGB values to 1.0
 
 // 1) make it work
 // 2) make it fast
-float nn_interpolate(image img, float x, float y, int chan) // this is very slow, as it fetches values again for next pixels
+float nn_interpolate(image img, float x, float y, int chan)
 {
-//  float f0 = get_pixel(img, (int)x,     (int)y,     chan);
-//  float f1 = get_pixel(img, (int)(x+1), (int)y,     chan);
-//  float f2 = get_pixel(img, (int)x,     (int)(y+1), chan);
-//  float f3 = get_pixel(img, (int)(x+1), (int)(y+1), chan);
   // 2D nearest neighbour, s. https://en.wikipedia.org/wiki/Bilinear_interpolation#/media/File:Comparison_of_1D_and_2D_interpolation.svg
   return (float)get_pixel(img, round(x), round(y), chan);
 };
 
 image nn_resize(image img, int w, int h) // O(n^2)
 {
-  float xScale = (float)img.w / w;
+  float xScale = (float)img.w / w; // not intuitive, but faster than w/img.w --> xN = 1.0f / x*xScale (s. below)
   float yScale = (float)img.h / h;
 
   image imgN = make_image(w, h, img.chan);
@@ -265,6 +261,7 @@ image nn_resize(image img, int w, int h) // O(n^2)
         float yN = (float)y*yScale;
 
 //        float val = get_pixel(img, (int)xN, (int)yN, chan); // a) fast approach, no interpolation, just pick upper left neighbour
+                                                              //    result very similar to nn_interpolate
         float val = nn_interpolate(img, xN, yN, chan);
         set_pixel(imgN, x, y, chan, val);
       }
@@ -285,12 +282,12 @@ float bilinear_interpolate(image img, float x, float y, int chan) // this is ver
   float fY = y - (int)y;
   float xI1 = f0 + fX * (f1 - f0); // first interpolate upper x-values
   float xI2 = f2 + fX * (f3 - f2); // then lower x-values
-  return xI1 + fY * xI2;           // then interpolate in y-direction
+  return xI1 + fY * (xI2 - xI1);   // then interpolate in y-direction
 };
 
 image bilinear_resize(image img, int w, int h) // O(n^2)
 {
-  float xScale = (float)img.w / w;
+  float xScale = (float)img.w / w; // not intuitive, but faster than w/img.w --> xN = 1.0f / x*xScale (s. below)
   float yScale = (float)img.h / h;
 
   image imgN = make_image(w, h, img.chan);

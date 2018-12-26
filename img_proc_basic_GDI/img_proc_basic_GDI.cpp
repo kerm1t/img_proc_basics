@@ -37,7 +37,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_IMG_PROC_BASIC_GDI, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
-    image img = load_image("..\\data\\balloons_small.jpg");
+    image img = load_image("..\\data\\balloons.jpg");
 
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow, img.w, img.h))
@@ -81,7 +81,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 */
 
 // heap allocation error ... was due to write over array borders in nn_resize
-    imgOut = bilinear_resize(img, 1200, 600);
+    imgOut = bilinear_resize(img, 120, 60);
 
     for (int y = 0; y < imgOut.h; y++)
     {
