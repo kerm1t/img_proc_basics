@@ -35,6 +35,12 @@ image hsv_to_rgb(image img);
 void scale_image(image img, int chan, float val);
 void clamp_image(image img);
 
+float nn_interpolate(image img, float x, float y, int chan);
+image nn_resize(image img, int w, int h);
+float bilinear_interpolate(image img, float x, float y, int chan);
+image bilinear_resize(image img, int w, int h);
+
+
 #ifdef __cplusplus
 }
 #endif

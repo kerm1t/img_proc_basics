@@ -75,18 +75,18 @@ void save_image(image img, const char* filename) // convert to HWC (channels int
 
 image copy_image(image img)
 {
-  image imgOut = make_image(img.w, img.h, img.chan);
-  memcpy(imgOut.data, img.data, img.w* img.h* img.chan * sizeof(float));
-  return imgOut;
+  image imgN = make_image(img.w, img.h, img.chan);
+  memcpy(imgN.data, img.data, img.w* img.h* img.chan * sizeof(float));
+  return imgN;
 };
 
 float get_pixel(image img, int x, int y, int chan) // CHW : channel -> height -> width
 {
   // padding strategy: clamp
   if (x < 0) x = 0;
-  if (x >= img.w) x = img.w;
+  if (x >= img.w) x = img.w-1;
   if (y < 0) y = 0;
-  if (y >= img.h) y = img.h;
+  if (y >= img.h) y = img.h-1;
   return img.data[chan*img.w*img.h + y*img.w + x];
 };
 
@@ -234,4 +234,81 @@ void clamp_image(image img) // limit RGB values to 1.0
       }
     }
   }
+};
+
+// 1) make it work
+// 2) make it fast
+float nn_interpolate(image img, float x, float y, int chan) // this is very slow, as it fetches values again for next pixels
+{
+//  float f0 = get_pixel(img, (int)x,     (int)y,     chan);
+//  float f1 = get_pixel(img, (int)(x+1), (int)y,     chan);
+//  float f2 = get_pixel(img, (int)x,     (int)(y+1), chan);
+//  float f3 = get_pixel(img, (int)(x+1), (int)(y+1), chan);
+  // 2D nearest neighbour, s. https://en.wikipedia.org/wiki/Bilinear_interpolation#/media/File:Comparison_of_1D_and_2D_interpolation.svg
+  return (float)get_pixel(img, round(x), round(y), chan);
+};
+
+image nn_resize(image img, int w, int h) // O(n^2)
+{
+  float xScale = (float)img.w / w;
+  float yScale = (float)img.h / h;
+
+  image imgN = make_image(w, h, img.chan);
+
+  for (int y = 0; y < h; y++)
+  {
+    for (int x = 0; x < w; x++)
+    {
+      for (int chan = 0; chan < 3; chan++)
+      {
+        float xN = (float)x*xScale;
+        float yN = (float)y*yScale;
+
+//        float val = get_pixel(img, (int)xN, (int)yN, chan); // a) fast approach, no interpolation, just pick upper left neighbour
+        float val = nn_interpolate(img, xN, yN, chan);
+        set_pixel(imgN, x, y, chan, val);
+      }
+    }
+  }
+
+  return imgN;
+};
+
+float bilinear_interpolate(image img, float x, float y, int chan) // this is very slow, as it fetches values again for next pixels
+{
+  float f0 = get_pixel(img, (int)x,     (int)y,     chan);
+  float f1 = get_pixel(img, (int)(x+1), (int)y,     chan);
+  float f2 = get_pixel(img, (int)x,     (int)(y+1), chan);
+  float f3 = get_pixel(img, (int)(x+1), (int)(y+1), chan);
+ 
+  float fX = x - (int)x;
+  float fY = y - (int)y;
+  float xI1 = f0 + fX * (f1 - f0); // first interpolate upper x-values
+  float xI2 = f2 + fX * (f3 - f2); // then lower x-values
+  return xI1 + fY * xI2;           // then interpolate in y-direction
+};
+
+image bilinear_resize(image img, int w, int h) // O(n^2)
+{
+  float xScale = (float)img.w / w;
+  float yScale = (float)img.h / h;
+
+  image imgN = make_image(w, h, img.chan);
+
+  for (int y = 0; y < h; y++)
+  {
+    for (int x = 0; x < w; x++)
+    {
+      for (int chan = 0; chan < 3; chan++)
+      {
+        float xN = (float)x*xScale;
+        float yN = (float)y*yScale;
+
+        float val = bilinear_interpolate(img, xN, yN, chan);
+        set_pixel(imgN, x, y, chan, val);
+      }
+    }
+  }
+
+  return imgN;
 };

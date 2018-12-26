@@ -37,7 +37,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_IMG_PROC_BASIC_GDI, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
-    image img = load_image("..\\data\\california_sunset.jpg");
+    image img = load_image("..\\data\\balloons_small.jpg");
 
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow, img.w, img.h))
@@ -52,7 +52,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HDC hdc = GetDC(hWnd);
     image imgOut;
 
-    imgOut = copy_image(img);
+//    imgOut = copy_image(img);
     // a) remove red
 /*    for (int y = 0; y < img.h; y++)
     {
@@ -71,13 +71,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //    shift_image(imgOut, 1, 1.4f);
 //    shift_image(imgOut, 2, 0.1f);
 //    clamp_image(imgOut);
-
+/*
     // d) HSV
     image imgTMP = rgb_to_hsv(img);
     scale_image(imgTMP, 1, 1.5f); // increase saturation
     clamp_image(imgTMP);
     imgOut = hsv_to_rgb(imgTMP);
     free_image(imgTMP);
+*/
+
+// heap allocation error ... was due to write over array borders in nn_resize
+    imgOut = bilinear_resize(img, 1200, 600);
 
     for (int y = 0; y < imgOut.h; y++)
     {
@@ -97,6 +101,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         SetPixel(hdc, x, y, RGB(r*255.0f, g*255.0f, b*255.0f)); // draw to GDI canvas
       }
     }
+
 //    save_image(imgOut, "d:\\output.png");
     free_image(img);
     free_image(imgOut);
