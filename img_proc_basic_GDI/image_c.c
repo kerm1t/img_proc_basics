@@ -225,7 +225,7 @@ void clamp_image(image img) // limit RGB values to 1.0
   {
     for (int x = 0; x < img.w; x++)
     {
-      for (int chan = 0; chan < 3; chan++)
+      for (int chan = 0; chan < img.chan; chan++)
       {
         if (get_pixel(img, x, y, chan) > 1.0f)
         {
@@ -255,7 +255,7 @@ image nn_resize(image img, int w, int h) // O(n^2)
   {
     for (int x = 0; x < w; x++)
     {
-      for (int chan = 0; chan < 3; chan++)
+      for (int chan = 0; chan < img.chan; chan++)
       {
         float xN = (float)x*xScale;
         float yN = (float)y*yScale;
@@ -296,7 +296,7 @@ image bilinear_resize(image img, int w, int h) // O(n^2)
   {
     for (int x = 0; x < w; x++)
     {
-      for (int chan = 0; chan < 3; chan++)
+      for (int chan = 0; chan < img.chan; chan++)
       {
         float xN = (float)x*xScale;
         float yN = (float)y*yScale;

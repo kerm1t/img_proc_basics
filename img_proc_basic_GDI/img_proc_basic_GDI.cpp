@@ -51,7 +51,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HDC hdc = GetDC(hWnd);
     image imgOut;
-
+    img = rgb_to_grayscale(img);
 //    imgOut = copy_image(img);
     // a) remove red
 /*    for (int y = 0; y < img.h; y++)
