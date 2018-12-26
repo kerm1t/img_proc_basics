@@ -40,6 +40,9 @@ image nn_resize(image img, int w, int h);
 float bilinear_interpolate(image img, float x, float y, int chan);
 image bilinear_resize(image img, int w, int h);
 
+void l1_normalize(image img);
+image make_box_filter(const int w);
+image convolve_image(image img, image filter, int preserve);
 
 #ifdef __cplusplus
 }

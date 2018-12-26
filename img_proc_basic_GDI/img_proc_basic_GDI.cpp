@@ -80,8 +80,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     free_image(imgTMP);
 */
 
+    // d) resize
 // heap allocation error ... was due to write over array borders in nn_resize
-    imgOut = bilinear_resize(img, 120, 60);
+//    imgOut = bilinear_resize(img, 1200, 600); // enlarge balloons_small.jpg
+//    imgOut = bilinear_resize(img, 120, 60);   // shrink balloons.jpg
+
+    // e) lowpass (blur), then shrink
+    image filt = make_box_filter(3);
+    imgOut = convolve_image(img, filt, 0);
+    imgOut = nn_resize(imgOut, img.w/filt.w, img.h/filt.w);   // shrink balloons.jpg
 
     for (int y = 0; y < imgOut.h; y++)
     {

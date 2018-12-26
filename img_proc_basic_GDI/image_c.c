@@ -292,11 +292,11 @@ image bilinear_resize(image img, int w, int h) // O(n^2)
 
   image imgN = make_image(w, h, img.chan);
 
-  for (int y = 0; y < h; y++)
+  for (int y = 0; y < h; y++) // h == imgN.h
   {
-    for (int x = 0; x < w; x++)
+    for (int x = 0; x < w; x++) // w == imgN.w
     {
-      for (int chan = 0; chan < img.chan; chan++)
+      for (int chan = 0; chan < img.chan; chan++) // img.chan == imgN.chan
       {
         float xN = (float)x*xScale;
         float yN = (float)y*yScale;
@@ -307,5 +307,68 @@ image bilinear_resize(image img, int w, int h) // O(n^2)
     }
   }
 
+  return imgN;
+};
+
+void l1_normalize(image img)
+{
+  assert(img.chan == 1);
+  float fSum = 0.0f;
+  for (int y = 0; y < img.h; y++)
+  {
+    for (int x = 0; x < img.w; x++)
+    {
+      fSum += get_pixel(img, x, y, 0); // do we get too LARGE values here ?
+    }
+  }
+  for (int y = 0; y < img.h; y++)
+  {
+    for (int x = 0; x < img.w; x++)
+    {
+      set_pixel(img, x, y, 0, (float)get_pixel(img, x, y, 0) / fSum); // do we get too small values here ?
+    }
+  }
+};
+
+image make_box_filter(const int w)
+{
+  image img = make_image(w, w, 1);
+  for (int y = 0; y < img.h; y++)
+  {
+    for (int x = 0; x < img.w; x++)
+    {
+      set_pixel(img, x, y, 0, 1);
+    }
+  }
+  l1_normalize(img);
+  return img;
+};
+
+image convolve_image(image img, image filter, int preserve) // O(n^4) ... terribly slow
+{
+  assert(img.chan == 1);
+  image imgN = make_image(img.w, img.h, img.chan);
+  float filtHalf = filter.w / 2.0f;
+  for (int y = 0; y < img.h; y++)
+  {
+    for (int x = 0; x < img.w; x++)
+    {
+      float fConv = 0.0f;
+//      float fPix = get_pixel(img, x, y);
+      for (int Y = 0; Y < filter.h; Y++)
+      {
+        for (int X = 0; X < filter.w; X++)
+        {
+          // std. filter kernel:                   x+(-filtHalf + X)
+          // matched (reverted) filter kernel:     x+( filtHalf - X)
+          fConv += get_pixel(img, (int)(x + (-filtHalf + X)), (int)(y + (-filtHalf + Y)), 0) * get_pixel(filter, X, Y, 0);
+// dbg         float fPix = get_pixel(img, (int)(x + (-filtHalf + X)), (int)(y + (-filtHalf + Y)), 0);
+// dbg         float fF = get_pixel(filter, X, Y, 0);
+// dbg         fConv += fPix * fF;
+        }
+      }
+      set_pixel(imgN, x, y, 0, fConv);
+    }
+  }
   return imgN;
 };
