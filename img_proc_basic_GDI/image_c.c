@@ -6,7 +6,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-image make_image(const int w, const int h, const int chan) // 1 byte per channel
+image make_image(const int w, const int h, const int chan) // 1 byte per channel. gray = 1 chan, RGB = 3 chan
 {
   image img;
   img.w = w;
@@ -28,7 +28,7 @@ image load_image(const char* filename) // convert from HWC (channels interleaved
   int chan;
   unsigned char* data;
   data = stbi_load(filename, &w, &h, &chan, 0);
-  assert(data != NULL);
+  assert(data != NULL); // e.g. file not found
 
   image img = make_image(w, h, chan);
 
@@ -106,14 +106,14 @@ image rgb_to_grayscale(image img)
       float r = get_pixel(img, x, y, 0);
       float g = get_pixel(img, x, y, 1);
       float b = get_pixel(img, x, y, 2);
-      float Y = 0.299f *r + 0.587f *g + .114f *b;
+      float Y = 0.299f *r + 0.587f *g + .114f *b; // relative luminance, green light predominant - s. https://github.com/pjreddie/vision-hw0 and Wiki!
       set_pixel(imgG, x, y, 0, Y);
     }
   }
   return imgG;
 };
 
-image rgb_to_hsv(image img)
+image rgb_to_hsv(image img) // convert RGB cube to HSV cylinder
 {
   assert(img.chan == 3);
   image imgHSV = make_image(img.w, img.h, img.chan);
@@ -208,7 +208,7 @@ image hsv_to_rgb(image img)
 
 };
 
-void scale_image(image img, int chan, float val)
+void scale_image(image img, int chan, float val) // i.e. scale color value
 {
   for (int y = 0; y < img.h; y++)
   {
@@ -219,7 +219,7 @@ void scale_image(image img, int chan, float val)
   }
 };
 
-void clamp_image(image img)
+void clamp_image(image img) // limit RGB values to 1.0
 {
   for (int y = 0; y < img.h; y++)
   {
