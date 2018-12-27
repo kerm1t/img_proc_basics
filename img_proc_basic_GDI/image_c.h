@@ -42,6 +42,8 @@ image bilinear_resize(image img, int w, int h);
 
 void l1_normalize(image img);
 image make_box_filter(const int w);
+image make_filter_kernel(const int w, float kernel[]);
+image make_gaussian_filter(float sigma);
 image convolve_image(image img, image filter, int preserve);
 
 #ifdef __cplusplus

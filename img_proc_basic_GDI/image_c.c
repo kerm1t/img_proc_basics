@@ -1,4 +1,9 @@
 #include "image_c.h"
+#include <math.h> // exp - where is M_PI ???
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846f
+#endif
 
 #pragma warning(disable:4996) // _CRT_SECURE_NO_WARNINGS
 #define STB_IMAGE_IMPLEMENTATION
@@ -97,7 +102,7 @@ void set_pixel(image img, int x, int y, int chan, float val) // CHW
 
 image rgb_to_grayscale(image img)
 {
-  assert(img.chan == 3);
+  assert(img.chan >= 3); // e.g. a PNG with 4 channels
   image imgG = make_image(img.w, img.h, 1);
   for (int y = 0; y < img.h; y++)
   {
@@ -333,11 +338,42 @@ void l1_normalize(image img)
 image make_box_filter(const int w)
 {
   image img = make_image(w, w, 1);
+// float val = 1.0f / (w*w);  // do normalization right here
   for (int y = 0; y < img.h; y++)
   {
     for (int x = 0; x < img.w; x++)
     {
-      set_pixel(img, x, y, 0, 1);
+      set_pixel(img, x, y, 0, 1.0f);
+    }
+  }
+  l1_normalize(img); // s. above
+  return img;
+};
+
+image make_filter_kernel(const int w, float kernel[]) // no normalization, take care yourself of proper vals!
+{
+  image img = make_image(w, w, 1);
+  for (int y = 0; y < img.h; y++)
+  {
+    for (int x = 0; x < img.w; x++)
+    {
+      set_pixel(img, x, y, 0, (float)kernel[y*w+x]);
+    }
+  }
+  return img;
+};
+
+// thanks, Wikipedia ;-) https://en.wikipedia.org/wiki/C_mathematical_functions
+image make_gaussian_filter(float sigma)
+{
+  int w = 3;
+  image img = make_image(w, w, 1);
+  for (int y = 0; y < img.h; y++)
+  {
+    for (int x = 0; x < img.w; x++)
+    {
+      float val = 1.0f / (2.0f * M_PI * sigma * sigma) * exp(-(x*x + y*y) / (2 * sigma * sigma));
+      set_pixel(img, x, y, 0, val);
     }
   }
   l1_normalize(img);

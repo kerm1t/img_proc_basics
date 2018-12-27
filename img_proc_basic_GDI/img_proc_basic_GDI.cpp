@@ -37,7 +37,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_IMG_PROC_BASIC_GDI, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
-    image img = load_image("..\\data\\balloons.jpg");
+    image img = load_image("..\\data\\audi.png");
 
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow, img.w, img.h))
@@ -86,10 +86,49 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //    imgOut = bilinear_resize(img, 120, 60);   // shrink balloons.jpg
 
     // e) lowpass (blur), then shrink
-    image filt = make_box_filter(3);
-    imgOut = convolve_image(img, filt, 0);
-    imgOut = nn_resize(imgOut, img.w/filt.w, img.h/filt.w);   // shrink balloons.jpg
+//    image filt = make_box_filter(3);
+//    imgOut = convolve_image(img, filt, 0);
+//    imgOut = nn_resize(imgOut, img.w/filt.w, img.h/filt.w);   // shrink balloons.jpg
 
+    // f) highpass
+/*    image filt = make_box_filter(3);
+    set_pixel(filt, 0, 0, 0, 0);
+    set_pixel(filt, 1, 0, 0, -1);
+    set_pixel(filt, 2, 0, 0, 0);
+    set_pixel(filt, 0, 1, 0, -1);
+    set_pixel(filt, 1, 1, 0, 4);
+    set_pixel(filt, 2, 1, 0, -1);
+    set_pixel(filt, 0, 2, 0, 0);
+    set_pixel(filt, 1, 2, 0, -1);
+    set_pixel(filt, 2, 2, 0, 0);
+    imgOut = convolve_image(img, filt, 0);
+*/
+    // g) sharpen
+//    float sharpen[9] = {0,-1,0, -1,5,-1, 0,-1,0};
+//    image filt = make_filter_kernel(3,sharpen);
+//    imgOut = convolve_image(img, filt, 0);
+
+    // g) emboss
+    float emboss[9] = { -2,-1,0, -1,1,1, 0,1,2 };
+    image filt = make_filter_kernel(3, emboss);
+// nope    l1_normalize(filt);
+    imgOut = convolve_image(img, filt, 0);
+// nope    l1_normalize(imgOut);
+
+    // h) gaussian blur
+//    image filt = make_gaussian_filter(1.0f);
+//    imgOut = convolve_image(img, filt, 0);
+//    free_image(filt);
+/*
+    float sobelx[9] = { -1,0,1, -2,0,2, -1,0,1 };
+    float sobely[9] = { -1,2,-1, 0,0,0, 1,2,1 };
+    image filtx = make_filter_kernel(3, sobelx);
+    image filty = make_filter_kernel(3, sobely);
+    imgOut = convolve_image(img, filtx, 0);
+    imgOut = convolve_image(imgOut, filty, 0);
+    free_image(filtx);
+    free_image(filty);
+*/
     for (int y = 0; y < imgOut.h; y++)
     {
       for (int x = 0; x < imgOut.w; x++)
@@ -99,7 +138,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         {
           r = g = b = get_pixel(imgOut, x, y, 0);
         }
-        if (imgOut.chan == 3)
+        if (imgOut.chan >= 3)
         {
           r = get_pixel(imgOut, x, y, 0);
           g = get_pixel(imgOut, x, y, 1);
