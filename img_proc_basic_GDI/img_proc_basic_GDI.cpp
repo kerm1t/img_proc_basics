@@ -37,7 +37,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_IMG_PROC_BASIC_GDI, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
-    image img = load_image("..\\data\\audi.png");
+    image img = load_image("..\\data\\california_sunset.jpg");
+//    image img = load_image("..\\data\\audi.png");
 
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow, img.w, img.h))
@@ -104,30 +105,37 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     imgOut = convolve_image(img, filt, 0);
 */
     // g) sharpen
-//    float sharpen[9] = {0,-1,0, -1,5,-1, 0,-1,0};
-//    image filt = make_filter_kernel(3,sharpen);
-//    imgOut = convolve_image(img, filt, 0);
+/*    float sharpen[9] = {0,-1,0, -1,5,-1, 0,-1,0};
+    image filt = make_filter_kernel(3,sharpen);
+    imgOut = convolve_image(img, filt, 0);
+    clamp_image(imgOut);
+    */
 
+//    img = convolve_image(img, make_box_filter(3), 0);
     // g) emboss
     float emboss[9] = { -2,-1,0, -1,1,1, 0,1,2 };
     image filt = make_filter_kernel(3, emboss);
 // nope    l1_normalize(filt);
     imgOut = convolve_image(img, filt, 0);
 // nope    l1_normalize(imgOut);
+//    clamp_image(imgOut);
+
 
     // h) gaussian blur
 //    image filt = make_gaussian_filter(1.0f);
 //    imgOut = convolve_image(img, filt, 0);
 //    free_image(filt);
-/*
-    float sobelx[9] = { -1,0,1, -2,0,2, -1,0,1 };
-    float sobely[9] = { -1,2,-1, 0,0,0, 1,2,1 };
+
+//    img = convolve_image(img, make_box_filter(7), 0);
+/*    float sobelx[9] = { -1,0,1, -2,0,2, -1,0,1 };
+    float sobely[9] = { -1,-2,-1, 0,0,0, 1,2,1 };
     image filtx = make_filter_kernel(3, sobelx);
     image filty = make_filter_kernel(3, sobely);
     imgOut = convolve_image(img, filtx, 0);
     imgOut = convolve_image(imgOut, filty, 0);
     free_image(filtx);
     free_image(filty);
+//    clamp_image(imgOut);
 */
     for (int y = 0; y < imgOut.h; y++)
     {
@@ -207,12 +215,17 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, int w, int h)
 {
    hInst = hInstance; // Store instance handle in our global variable
 
+   RECT r = { 0, 0, w, h };
+   AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, true); // wolli: get proper client area
+   w = r.right - r.left;
+   h = r.bottom - r.top;
+
    hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT,
       0,
-//      w, // x
-//      h, // y
-      CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+      w, // CW_USEDEFAULT
+      h, // 0
+      nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
