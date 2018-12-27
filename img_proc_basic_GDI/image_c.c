@@ -213,13 +213,24 @@ image hsv_to_rgb(image img)
 
 };
 
-void scale_image(image img, int chan, float val) // i.e. scale color value
+void shift_image(image img, int chan, float fshift) // shift intensity/color
 {
   for (int y = 0; y < img.h; y++)
   {
     for (int x = 0; x < img.w; x++)
     {
-      set_pixel(img, x, y, chan, get_pixel(img,x,y,chan)*val);
+      set_pixel(img, x, y, chan, get_pixel(img, x, y, chan) + fshift);
+    }
+  }
+};
+
+void scale_image(image img, int chan, float fscale) // i.e. scale color value
+{
+  for (int y = 0; y < img.h; y++)
+  {
+    for (int x = 0; x < img.w; x++)
+    {
+      set_pixel(img, x, y, chan, get_pixel(img,x,y,chan)*fscale);
     }
   }
 };
@@ -388,7 +399,6 @@ image convolve_image(image img, image filter, int preserve) // O(n^4) ... terrib
     for (int x = 0; x < img.w; x++)
     {
       float fConv = 0.0f;
-//      float fPix = get_pixel(img, x, y);
       for (int Y = 0; Y < filter.h; Y++)
       {
         for (int X = 0; X < filter.w; X++)

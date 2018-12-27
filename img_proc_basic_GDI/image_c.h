@@ -32,6 +32,7 @@ void set_pixel(image img, int x, int y, int chan, float val);
 image rgb_to_grayscale(image img);
 image rgb_to_hsv(image img);
 image hsv_to_rgb(image img);
+void shift_image(image img, int chan, float fshift);
 void scale_image(image img, int chan, float val);
 void clamp_image(image img);
 
