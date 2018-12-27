@@ -232,10 +232,8 @@ void clamp_image(image img) // limit RGB values to 1.0
     {
       for (int chan = 0; chan < img.chan; chan++)
       {
-        if (get_pixel(img, x, y, chan) > 1.0f)
-        {
-          set_pixel(img, x, y, chan, 1.0f);
-        }
+        if      (get_pixel(img, x, y, chan) < 0.0f) set_pixel(img, x, y, chan, 0.0f);
+        else if (get_pixel(img, x, y, chan) > 1.0f) set_pixel(img, x, y, chan, 1.0f);
       }
     }
   }
