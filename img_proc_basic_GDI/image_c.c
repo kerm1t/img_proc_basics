@@ -224,7 +224,7 @@ void scale_image(image img, int chan, float val) // i.e. scale color value
   }
 };
 
-void clamp_image(image img) // limit RGB values to 1.0
+void clamp_image(image img) // limit RGB values to [0.0 ... 1.0], otherwise overflow, when converting to [0 ... 255]
 {
   for (int y = 0; y < img.h; y++)
   {

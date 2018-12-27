@@ -103,6 +103,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     set_pixel(filt, 1, 2, 0, -1);
     set_pixel(filt, 2, 2, 0, 0);
     imgOut = convolve_image(img, filt, 0);
+    // needs intensity shift, as filter sums up to 0
+    for (int y = 0; y < imgOut.h; y++)
+    {
+      for (int x = 0; x < imgOut.w; x++)
+      {
+        set_pixel(imgOut, x, y, 0, get_pixel(imgOut, x, y, 0) + 0.5f);
+      }
+    }
 */
     // g) sharpen
 /*    float sharpen[9] = {0,-1,0, -1,5,-1, 0,-1,0};
@@ -110,16 +118,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     imgOut = convolve_image(img, filt, 0);
     clamp_image(imgOut);
     */
-
-//    img = convolve_image(img, make_box_filter(3), 0);
     // g) emboss
-    float emboss[9] = { -2,-1,0, -1,1,1, 0,1,2 };
+/*    float emboss[9] = { -2,-1,0, -1,1,1, 0,1,2 };
     image filt = make_filter_kernel(3, emboss);
-// nope    l1_normalize(filt);
     imgOut = convolve_image(img, filt, 0);
-// nope    l1_normalize(imgOut);
-//    clamp_image(imgOut);
-
+    clamp_image(imgOut);
+    */
+    // another flavor of emboss filter
+    float emboss[9] = { 0,1,0, 0,0,0, 0,-1,0 };
+    image filt = make_filter_kernel(3, emboss);
+    imgOut = convolve_image(img, filt, 0);
+    // needs intensity shift, as filter sums up to 0
+    for (int y = 0; y < imgOut.h; y++)
+    {
+      for (int x = 0; x < imgOut.w; x++)
+      {
+        set_pixel(imgOut, x, y, 0, get_pixel(imgOut, x, y, 0) + 0.5f);
+      }
+    }
+    clamp_image(imgOut);
 
     // h) gaussian blur
 //    image filt = make_gaussian_filter(1.0f);
@@ -135,8 +152,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     imgOut = convolve_image(imgOut, filty, 0);
     free_image(filtx);
     free_image(filty);
-//    clamp_image(imgOut);
-*/
+    clamp_image(imgOut);
+    */
+
     for (int y = 0; y < imgOut.h; y++)
     {
       for (int x = 0; x < imgOut.w; x++)
