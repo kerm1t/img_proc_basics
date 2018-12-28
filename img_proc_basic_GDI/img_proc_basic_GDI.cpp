@@ -141,11 +141,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     free_image(pImg[0]);
     free_image(pImg[1]);
     free(pImg);
+    feature_normalize(imgOut); // looks much nicer(for magnitude!) than clamping the image
 */
-
     // k) colorized sobel filter
     imgOut = colorize_sobel(img);
-
+    feature_normalize(imgOut);
+    image filt = make_gaussian_filter(1.0f);
 
     for (int y = 0; y < imgOut.h; y++)
     {

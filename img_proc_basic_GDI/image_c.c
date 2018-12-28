@@ -211,7 +211,6 @@ image hsv_to_rgb(image img)
     }
   }
   return imgRGB;
-
 };
 
 void shift_image(image img, int chan, float fshift) // shift intensity/color
@@ -445,14 +444,15 @@ image* sobel_image(image img) // return gradient magnitude and direction
     {
       float fx = get_pixel(imgXY[0], x, y, 0);
       float fy = get_pixel(imgXY[1], x, y, 0);
-      float mag = sqrt(fx*fx + fy*fy); // slow
+      float mag = (float)sqrt(fx*fx + fy*fy); // slow
       set_pixel(imgMD[0], x, y, 0, mag);
       // direction = atan(y/x), s. https://en.wikipedia.org/wiki/Sobel_operator#Formulation
-      set_pixel(imgMD[1], x, y, 0, atan(fy/fx)); // slow, too -> use lookup table
+      set_pixel(imgMD[1], x, y, 0, (float)atan(fy/fx)); // slow, too -> use lookup table
     }
   }
-  clamp_image(imgMD[0]); // clamp only after all calculations, i.e. before save or display!
-  clamp_image(imgMD[1]);
+// clamping not needed anymore, as image is being normalized
+//  clamp_image(imgMD[0]); // clamp only after all calculations, i.e. before save or display!
+//  clamp_image(imgMD[1]);
 
 
   // cleanup
@@ -462,20 +462,49 @@ image* sobel_image(image img) // return gradient magnitude and direction
   return imgMD;
 };
 
-image colorize_sobel(image img)
+void feature_normalize(image img)
+{
+  for (int chan = 0; chan < img.chan; chan++) // img.chan == imgN.chan
+  {
+    float min = 999.0f;
+    float max = 0.0f;
+    for (int y = 0; y < img.h; y++)
+    {
+      for (int x = 0; x < img.w; x++)
+      {
+        float i = get_pixel(img, x, y, chan);
+        if (i < min) min = i;
+        if (i > max) max = i;
+      }
+    }
+    float range = max - min;
+    for (int y = 0; y < img.h; y++)
+    {
+      for (int x = 0; x < img.w; x++)
+      {
+        float i = get_pixel(img, x, y, chan);
+        set_pixel(img, x, y, chan, (i - min) / range);
+      }
+    }
+  } // for chan
+};
+
+image colorize_sobel(image img) // 2do, check this: https://www.researchgate.net/publication/314446743_A_Novel_Approach_for_Color_Image_Edge_Detection_Using_Multidirectional_Sobel_Filter_on_HSV_Color_Space
 {
   image imgCol = make_image(img.w,img.h,3);
   image* pImg;
-  pImg = sobel_image(img); // get Magn. + Direction
+  pImg = sobel_image(img); // get magn. + direction
+  feature_normalize(pImg[1]);
   for (int y = 0; y < img.h; y++)
   {
     for (int x = 0; x < img.w; x++)
     {
-      set_pixel(imgCol, x, y, 0, get_pixel(pImg[1], x, y, 0)); // [h]sv         hue = direction
-      set_pixel(imgCol, x, y, 1, get_pixel(pImg[0], x, y, 0)); // h[s]v  saturation = magnitude
-      set_pixel(imgCol, x, y, 2, 1.0f);                        // hs[v]       value = 1.0f
+      set_pixel(imgCol, x, y, 0, get_pixel(pImg[1], x, y, 0));  // [h]sv         hue = direction
+      set_pixel(imgCol, x, y, 1, 1.0f);                         // h[s]v  saturation = 1.0f
+      set_pixel(imgCol, x, y, 2, get_pixel(pImg[0], x, y, 0));  // hs[v]       value = magnitude
     }
   }
+//  feature_normalize(imgCol);
   imgCol = hsv_to_rgb(imgCol);
 
   // cleanup

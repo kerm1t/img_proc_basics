@@ -28,7 +28,7 @@ image copy_image(const image img);
 float get_pixel(image img, int x, int y, int chan);
 void set_pixel(image img, int x, int y, int chan, float val);
 
-// manipulate
+// global manipulate
 image rgb_to_grayscale(image img);
 image rgb_to_hsv(image img);
 image hsv_to_rgb(image img);
@@ -47,6 +47,7 @@ image make_filter_kernel(const int w, float kernel[]);
 image make_gaussian_filter(float sigma);
 image convolve_image(image img, image filter, int preserve);
 image* sobel_image(image img);
+void feature_normalize(image img); // -> global manipulate
 image colorize_sobel(image img);
 
 #ifdef __cplusplus
