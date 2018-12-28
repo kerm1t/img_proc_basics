@@ -236,6 +236,7 @@ void scale_image(image img, int chan, float fscale) // i.e. scale color value
   }
 };
 
+// clamp only after all calculations, i.e. before save or display!
 void clamp_image(image img) // limit RGB values to [0.0 ... 1.0], otherwise overflow, when converting to [0 ... 255]
 {
   for (int y = 0; y < img.h; y++)
@@ -424,8 +425,9 @@ image* sobel_image(image img) // return gradient magnitude and direction
   float sobely[9] = { -1,-2,-1, 0,0,0, 1,2,1 };
   image filtx = make_filter_kernel(3, sobelx);
   image filty = make_filter_kernel(3, sobely);
-// nok  image imgXY[2];                     // creates the array on the stack, instead use malloc ...
+// nok  image imgXY[2];                     // creates the array on the stack, instead use malloc (to use outside of this function) ...
   image* imgXY = malloc(2 * sizeof(image)); // ... s. https://stackoverflow.com/questions/5378768/returning-arrays-pointers-from-a-function
+                                            // very helpful explanation on the above site  
   imgXY[0] = convolve_image(img, filtx, 0);
   imgXY[1] = convolve_image(img, filty, 0);
   free_image(filtx);
@@ -436,6 +438,7 @@ image* sobel_image(image img) // return gradient magnitude and direction
   // magnitude = sqrt(x*x+y*y)
   image* imgMD = malloc(2 * sizeof(image)); // ... s. https://stackoverflow.com/questions/5378768/returning-arrays-pointers-from-a-function
   imgMD[0] = make_image(img.w, img.h, img.chan);
+  imgMD[1] = make_image(img.w, img.h, img.chan);
   for (int y = 0; y < img.h; y++)
   {
     for (int x = 0; x < img.w; x++)
@@ -444,11 +447,13 @@ image* sobel_image(image img) // return gradient magnitude and direction
       float fy = get_pixel(imgXY[1], x, y, 0);
       float mag = sqrt(fx*fx + fy*fy); // slow
       set_pixel(imgMD[0], x, y, 0, mag);
+      // direction = atan(y/x), s. https://en.wikipedia.org/wiki/Sobel_operator#Formulation
+      set_pixel(imgMD[1], x, y, 0, atan(fy/fx)); // slow, too -> use lookup table
     }
   }
   clamp_image(imgMD[0]); // clamp only after all calculations, i.e. before save or display!
+  clamp_image(imgMD[1]);
 
-  // direction = ...
 
   // cleanup
   free_image(imgXY[0]);

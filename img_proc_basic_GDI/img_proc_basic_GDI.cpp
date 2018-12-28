@@ -137,9 +137,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // j) sobel filter
     image* pImg;
     pImg = sobel_image(img);
-    imgOut = copy_image(pImg[0]); // 0 = magnitude, 1 = direction
+    imgOut = copy_image(pImg[1]); // 0 = magnitude, 1 = direction
     free_image(pImg[0]);
-//    free_image(pImg[1]);
+    free_image(pImg[1]);
     free(pImg);
 
     for (int y = 0; y < imgOut.h; y++)
