@@ -424,17 +424,35 @@ image* sobel_image(image img) // return gradient magnitude and direction
   float sobely[9] = { -1,-2,-1, 0,0,0, 1,2,1 };
   image filtx = make_filter_kernel(3, sobelx);
   image filty = make_filter_kernel(3, sobely);
-// nok  image imgS[2];                     // created on the stack, instead use malloc ...
-  image* imgS = malloc(2 * sizeof(image)); // ... s. https://stackoverflow.com/questions/5378768/returning-arrays-pointers-from-a-function
-  imgS[0] = convolve_image(img, filtx, 0);
-  imgS[1] = convolve_image(img, filty, 0);
+// nok  image imgXY[2];                     // creates the array on the stack, instead use malloc ...
+  image* imgXY = malloc(2 * sizeof(image)); // ... s. https://stackoverflow.com/questions/5378768/returning-arrays-pointers-from-a-function
+  imgXY[0] = convolve_image(img, filtx, 0);
+  imgXY[1] = convolve_image(img, filty, 0);
   free_image(filtx);
   free_image(filty);
-  clamp_image(imgS[0]);
-  clamp_image(imgS[1]);
-  // imgS is a vector
-  // imgS[0] is x-direction, imgS[1] y-direction
+  // imgXY is a vector
+  // imgXY[0] is x-direction, imgS[1] y-direction
+  
   // magnitude = sqrt(x*x+y*y)
+  image* imgMD = malloc(2 * sizeof(image)); // ... s. https://stackoverflow.com/questions/5378768/returning-arrays-pointers-from-a-function
+  imgMD[0] = make_image(img.w, img.h, img.chan);
+  for (int y = 0; y < img.h; y++)
+  {
+    for (int x = 0; x < img.w; x++)
+    {
+      float fx = get_pixel(imgXY[0], x, y, 0);
+      float fy = get_pixel(imgXY[1], x, y, 0);
+      float mag = sqrt(fx*fx + fy*fy); // slow
+      set_pixel(imgMD[0], x, y, 0, mag);
+    }
+  }
+  clamp_image(imgMD[0]); // clamp only after all calculations, i.e. before save or display!
+
   // direction = ...
-  return imgS;
+
+  // cleanup
+  free_image(imgXY[0]);
+  free_image(imgXY[1]);
+  free(imgXY);
+  return imgMD;
 };
