@@ -376,7 +376,7 @@ image make_filter_kernel(const int w, float kernel[]) // no normalization, take 
 // thanks, Wikipedia ;-) https://en.wikipedia.org/wiki/C_mathematical_functions
 image make_gaussian_filter(float sigma)
 {
-  int w = 3;
+  int w = (int)(6.0f * sigma); // 2do: make next hightest odd from 6 sigma
   image img = make_image(w, w, 1);
   for (int y = 0; y < img.h; y++)
   {
@@ -390,29 +390,32 @@ image make_gaussian_filter(float sigma)
   return img;
 };
 
-image convolve_image(image img, image filter, int preserve) // O(n^4) ... terribly slow
+image convolve_image(image img, image filter, int preserve) // O(n^4/5/6) ... terribly slow
 {
-  assert(img.chan == 1);
+  assert(filter.chan == 1);
   image imgN = make_image(img.w, img.h, img.chan);
   float filtHalf = filter.w / 2.0f;
   for (int y = 0; y < img.h; y++)
   {
     for (int x = 0; x < img.w; x++)
     {
-      float fConv = 0.0f;
-      for (int Y = 0; Y < filter.h; Y++)
+      for (int chan = 0; chan < img.chan; chan++) // img.chan == imgN.chan
       {
-        for (int X = 0; X < filter.w; X++)
+        float fConv = 0.0f;
+        for (int Y = 0; Y < filter.h; Y++)
         {
-          // std. filter kernel:                   x+(-filtHalf + X)
-          // matched (reverted) filter kernel:     x+( filtHalf - X)
-          fConv += get_pixel(img, (int)(x + (-filtHalf + X)), (int)(y + (-filtHalf + Y)), 0) * get_pixel(filter, X, Y, 0);
-// dbg         float fPix = get_pixel(img, (int)(x + (-filtHalf + X)), (int)(y + (-filtHalf + Y)), 0);
-// dbg         float fF = get_pixel(filter, X, Y, 0);
-// dbg         fConv += fPix * fF;
+          for (int X = 0; X < filter.w; X++)
+          {
+            // std. filter kernel:                   x+(-filtHalf + X)
+            // matched (reverted) filter kernel:     x+( filtHalf - X)
+            fConv += get_pixel(img, (int)(x + (-filtHalf + X)), (int)(y + (-filtHalf + Y)), chan) * get_pixel(filter, X, Y, 0);
+            // dbg         float fPix = get_pixel(img, (int)(x + (-filtHalf + X)), (int)(y + (-filtHalf + Y)), 0);
+            // dbg         float fF = get_pixel(filter, X, Y, 0);
+            // dbg         fConv += fPix * fF;
+          }
         }
+        set_pixel(imgN, x, y, chan, fConv);
       }
-      set_pixel(imgN, x, y, 0, fConv);
     }
   }
   return imgN;
@@ -464,7 +467,7 @@ image* sobel_image(image img) // return gradient magnitude and direction
 
 void feature_normalize(image img)
 {
-  for (int chan = 0; chan < img.chan; chan++) // img.chan == imgN.chan
+  for (int chan = 0; chan < img.chan; chan++) // per channel, so we do not need an array for min, max (s. below)
   {
     float min = 999.0f;
     float max = 0.0f;
@@ -504,7 +507,6 @@ image colorize_sobel(image img) // 2do, check this: https://www.researchgate.net
       set_pixel(imgCol, x, y, 2, get_pixel(pImg[0], x, y, 0));  // hs[v]       value = magnitude
     }
   }
-//  feature_normalize(imgCol);
   imgCol = hsv_to_rgb(imgCol);
 
   // cleanup

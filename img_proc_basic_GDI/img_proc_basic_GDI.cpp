@@ -146,7 +146,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // k) colorized sobel filter
     imgOut = colorize_sobel(img);
     feature_normalize(imgOut);
-    image filt = make_gaussian_filter(1.0f);
+    image filt = make_gaussian_filter(0.5f);
+    imgOut = convolve_image(imgOut, filt, 0);
+    free_image(filt);
 
     for (int y = 0; y < imgOut.h; y++)
     {
