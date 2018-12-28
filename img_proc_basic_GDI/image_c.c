@@ -461,3 +461,26 @@ image* sobel_image(image img) // return gradient magnitude and direction
   free(imgXY);
   return imgMD;
 };
+
+image colorize_sobel(image img)
+{
+  image imgCol = make_image(img.w,img.h,3);
+  image* pImg;
+  pImg = sobel_image(img); // get Magn. + Direction
+  for (int y = 0; y < img.h; y++)
+  {
+    for (int x = 0; x < img.w; x++)
+    {
+      set_pixel(imgCol, x, y, 0, get_pixel(pImg[1], x, y, 0)); // [h]sv         hue = direction
+      set_pixel(imgCol, x, y, 1, get_pixel(pImg[0], x, y, 0)); // h[s]v  saturation = magnitude
+      set_pixel(imgCol, x, y, 2, 1.0f);                        // hs[v]       value = 1.0f
+    }
+  }
+  imgCol = hsv_to_rgb(imgCol);
+
+  // cleanup
+  free_image(pImg[0]);
+  free_image(pImg[1]);
+  free(pImg);
+  return imgCol;
+};

@@ -135,12 +135,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // i) Ronbledore ... later
 
     // j) sobel filter
-    image* pImg;
+/*    image* pImg;
     pImg = sobel_image(img);
-    imgOut = copy_image(pImg[1]); // 0 = magnitude, 1 = direction
+    imgOut = copy_image(pImg[0]); // 0 = magnitude, 1 = direction
     free_image(pImg[0]);
     free_image(pImg[1]);
     free(pImg);
+*/
+
+    // k) colorized sobel filter
+    imgOut = colorize_sobel(img);
+
 
     for (int y = 0; y < imgOut.h; y++)
     {
