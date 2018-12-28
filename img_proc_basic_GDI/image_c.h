@@ -23,7 +23,7 @@ image make_image(const int w, const int h, const int chan);
 void free_image(image img);
 image load_image(const char* filename);
 void save_image(image img, const char* filename);
-image copy_image(image img);
+image copy_image(const image img);
 
 float get_pixel(image img, int x, int y, int chan);
 void set_pixel(image img, int x, int y, int chan, float val);
@@ -46,6 +46,7 @@ image make_box_filter(const int w);
 image make_filter_kernel(const int w, float kernel[]);
 image make_gaussian_filter(float sigma);
 image convolve_image(image img, image filter, int preserve);
+image* sobel_image(image img);
 
 #ifdef __cplusplus
 }

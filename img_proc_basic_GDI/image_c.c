@@ -17,7 +17,8 @@ image make_image(const int w, const int h, const int chan) // 1 byte per channel
   img.w = w;
   img.h = h;
   img.chan = chan;
-  img.data = malloc(w * h * chan * sizeof(float));
+  img.data = malloc(w * h * chan * sizeof(float));  // malloc = no initialization - otherwise use calloc, ...
+                                                    // ... almost, s. https://vorpus.org/blog/why-does-calloc-exist/
   return img;
 };
 
@@ -78,7 +79,7 @@ void save_image(image img, const char* filename) // convert to HWC (channels int
   free(data);
 };
 
-image copy_image(image img)
+image copy_image(const image img)
 {
   image imgN = make_image(img.w, img.h, img.chan);
   memcpy(imgN.data, img.data, img.w* img.h* img.chan * sizeof(float));
@@ -163,7 +164,7 @@ image hsv_to_rgb(image img)
 // https://en.wikipedia.org/wiki/HSL_and_HSV#Hue_and_chroma
       float C = V * S;
       float h = H * 6.0f;
-      float X = C * (1.0f - fabs(fmod(h,2) - 1.0f));
+      float X = C * (float)(1.0f - fabs(fmod(h,2) - 1.0f));
       float r, g, b;
       r = g = b = 0.0f; // if h / H is undefined
       // find bottom points for r,g,b   ...   position on hexagon
@@ -255,7 +256,7 @@ void clamp_image(image img) // limit RGB values to [0.0 ... 1.0], otherwise over
 float nn_interpolate(image img, float x, float y, int chan)
 {
   // 2D nearest neighbour, s. https://en.wikipedia.org/wiki/Bilinear_interpolation#/media/File:Comparison_of_1D_and_2D_interpolation.svg
-  return (float)get_pixel(img, round(x), round(y), chan);
+  return get_pixel(img, (int)round(x), (int)round(y), chan);
 };
 
 image nn_resize(image img, int w, int h) // O(n^2)
@@ -381,7 +382,7 @@ image make_gaussian_filter(float sigma)
   {
     for (int x = 0; x < img.w; x++)
     {
-      float val = 1.0f / (2.0f * M_PI * sigma * sigma) * exp(-(x*x + y*y) / (2 * sigma * sigma));
+      float val = 1.0f / (2.0f * M_PI * sigma * sigma) * (float)exp(-(x*x + y*y) / (2 * sigma * sigma));
       set_pixel(img, x, y, 0, val);
     }
   }
@@ -415,4 +416,25 @@ image convolve_image(image img, image filter, int preserve) // O(n^4) ... terrib
     }
   }
   return imgN;
+};
+
+image* sobel_image(image img) // return gradient magnitude and direction
+{
+  float sobelx[9] = { -1,0,1, -2,0,2, -1,0,1 };
+  float sobely[9] = { -1,-2,-1, 0,0,0, 1,2,1 };
+  image filtx = make_filter_kernel(3, sobelx);
+  image filty = make_filter_kernel(3, sobely);
+// nok  image imgS[2];                     // created on the stack, instead use malloc ...
+  image* imgS = malloc(2 * sizeof(image)); // ... s. https://stackoverflow.com/questions/5378768/returning-arrays-pointers-from-a-function
+  imgS[0] = convolve_image(img, filtx, 0);
+  imgS[1] = convolve_image(img, filty, 0);
+  free_image(filtx);
+  free_image(filty);
+  clamp_image(imgS[0]);
+  clamp_image(imgS[1]);
+  // imgS is a vector
+  // imgS[0] is x-direction, imgS[1] y-direction
+  // magnitude = sqrt(x*x+y*y)
+  // direction = ...
+  return imgS;
 };

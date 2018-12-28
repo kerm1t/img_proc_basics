@@ -37,8 +37,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_IMG_PROC_BASIC_GDI, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
-//    image img = load_image("..\\data\\california_sunset.jpg");
-    image img = load_image("..\\data\\audi.png");
+    image img = load_image("..\\data\\california_sunset.jpg");
+//    image img = load_image("..\\data\\audi.png");
 
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow, img.w, img.h))
@@ -132,7 +132,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //    imgOut = convolve_image(img, filt, 0);
 //    free_image(filt);
 
-    float sobelx[9] = { -1,0,1, -2,0,2, -1,0,1 };
+    // i) Ronbledore ... later
+
+    // j) sobel filter
+//    img = convolve_image(img, make_gaussian_filter(1.0f), 0);
+/*    float sobelx[9] = { -1,0,1, -2,0,2, -1,0,1 };
     float sobely[9] = { -1,-2,-1, 0,0,0, 1,2,1 };
     image filtx = make_filter_kernel(3, sobelx);
     image filty = make_filter_kernel(3, sobely);
@@ -141,7 +145,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     free_image(filtx);
     free_image(filty);
     clamp_image(imgOut);
-
+    */
+    image* pImg;
+    pImg = sobel_image(img);
+    imgOut = copy_image(*pImg);
+// nok either    imgOut.data = pImg->data; ... had sme problem here which seems to root the image pointers being created on
+//    free_image(*(pImg++));                   sobel_image stack instead of heap
+//    free_image(pImg[0]);
+    free(pImg);
 
     for (int y = 0; y < imgOut.h; y++)
     {
