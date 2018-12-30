@@ -5,6 +5,8 @@
 #include "img_proc_basic_GDI.h"
 
 #include "image_c.h"
+#include "image_pano.h"
+
 //#include "gdi_dblbuf.hpp" ... needs MFC, so -> nope!
 
 #define MAX_LOADSTRING 100
@@ -37,6 +39,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_IMG_PROC_BASIC_GDI, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
+//    image img = load_image("..\\data\\Lena.png");
     image img = load_image("..\\data\\california_sunset.jpg");
 //    image img = load_image("..\\data\\audi.png");
 
@@ -146,9 +149,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // k) colorized sobel filter
     imgOut = colorize_sobel(img);
     feature_normalize(imgOut);
-    image filt = make_gaussian_filter(0.5f);
-    imgOut = convolve_image(imgOut, filt, 0);
-    free_image(filt);
+//    image filt = make_gaussian_filter(1.5f);
+//    imgOut = convolve_image(imgOut, filt, 0);
+//    free_image(filt);
+
+
 
     for (int y = 0; y < imgOut.h; y++)
     {
@@ -169,7 +174,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
       }
     }
 
-//    save_image(imgOut, "d:\\output.png");
+    save_image(imgOut, "d:\\output.png");
     free_image(img);
     free_image(imgOut);
 

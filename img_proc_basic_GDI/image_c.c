@@ -423,6 +423,7 @@ image convolve_image(image img, image filter, int preserve) // O(n^4/5/6) ... te
 
 image* sobel_image(image img) // return gradient magnitude and direction
 {
+  assert(img.chan == 1);
   float sobelx[9] = { -1,0,1, -2,0,2, -1,0,1 };
   float sobely[9] = { -1,-2,-1, 0,0,0, 1,2,1 };
   image filtx = make_filter_kernel(3, sobelx);
@@ -447,7 +448,7 @@ image* sobel_image(image img) // return gradient magnitude and direction
     {
       float fx = get_pixel(imgXY[0], x, y, 0);
       float fy = get_pixel(imgXY[1], x, y, 0);
-      float mag = (float)sqrt(fx*fx + fy*fy); // slow
+      float mag = (float)sqrt(fx*fx + fy*fy); // slow .. magnitude approx. with abs(fx)+abs(fy), s. https://pdfs.semanticscholar.org/97b5/cfb09ec73ce74e2c4defe28550ac73e296b0.pdf
       set_pixel(imgMD[0], x, y, 0, mag);
       // direction = atan(y/x), s. https://en.wikipedia.org/wiki/Sobel_operator#Formulation
       set_pixel(imgMD[1], x, y, 0, (float)atan(fy/fx)); // slow, too -> use lookup table
